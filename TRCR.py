@@ -6,6 +6,7 @@
 # With help from Mr Trong Hoan mushogenshin.com
 # Support: cvbtruong@gmail.com or truongcgartist@gmail.com
 
+import sys
 import maya.cmds as cmds
 import pymel.core as pm
 import maya.mel as mel
@@ -17,13 +18,51 @@ from math import pow, sqrt
 from os import listdir
 from os.path import isfile, join
 
-try:
-    cmds.loadPlugin('ngSkinTools')  # this must be loaded to provide all the ngSkinTools cmds
-    from ngSkinTools.mllInterface import MllInterface
-    from ngSkinTools.layerUtils import LayerUtils
-except ImportError:
-    cmds.error("Unable to import ngSkinTools, ngSkin relax weights won't be executed.")
-    MllInterface = None
+IS_PY2 = sys.version_info.major < 3
+MAYA_VERSION = int(cmds.about(v=True))
+NGSKINTOOLS_VERSION = None
+
+MllInterface = None
+
+def load_generic_ngskintools():
+    """
+    Attempt to load ngSkinTools (version 1) first, then, if failed, version 2.
+    """
+    if MAYA_VERSION >= 2022:
+        # ngSkinTools (version 1) is no longer supported in Maya 2022,
+        load_ngskintools2()
+    else:
+        # user might be using either ngSkinTools 1 or 2
+        try:
+            # firstly, see if ngSkinTools is installed, as
+            cmds.loadPlugin('ngSkinTools')  
+        except RuntimeError:
+            cmds.warning("Failed to load ngSkinTools (version 1) plugin, attempting to load version 2")
+            load_ngskintools2()
+        else:
+            NGSKINTOOLS_VERSION = 1
+            # this provides all the ngSkinTools cmds we need for relaxing skinweights
+            from ngSkinTools.mllInterface import MllInterface
+            from ngSkinTools.layerUtils import LayerUtils
+
+def load_ngskintools2():
+    """
+    Try loading ngSkinTools2  plugin.
+    """
+    try:
+        cmds.loadPlugin('ngSkinTools2') 
+    except RuntimeError:
+        cmds.error("ngSkinTools cannot be found, relaxing skinweights won't be executed")
+    else:
+        NGSKINTOOLS_VERSION = 2
+        # TODO: we must use API of ngSkinTools2 and above
+        cmds.warning("Access to ngSkinTools (version 2) is not yet supported. Please do your smooth skinning manually.")
+
+
+# Modify ngSkinTools's `MllInterface` if imports succeed.
+load_generic_ngskintools()
+
+# -------------------------------------------------------------------------------
 
 # Advanced Skeleton path.
 AdvancedSkeletonPath = None
@@ -3262,7 +3301,7 @@ def smoothSkinning(MllInterface, orginalBodyMeshes, relax_num=1):
 
     # Cleanup
     try:
-        LayerUtils.deleteCustomNodes()
+        LayerUtils.deleteCustomNodes() # type: ignore
     except ImportError:
         # TODO: manually clean up the ngSkinData node connected to the skinCluster node
         pass
