@@ -1,0 +1,11 @@
+{
+	"python.envFile": "${workspaceFolder}/.vscode/dev.env",
+	"python.autoComplete.extraPaths": [
+		"C:/Program Files/Autodesk/Maya2020/devkit/other/pymel/extras/completion/py",
+		"/Applications/Autodesk/maya2020/devkit/other/pymel/extras/completion/py"
+	],
+	"python.analysis.extraPaths": [
+		"C:/Program Files/Autodesk/Maya2020/devkit/other/pymel/extras/completion/py",
+		"/Applications/Autodesk/maya2020/devkit/other/pymel/extras/completion/py"
+	]
+}
