@@ -7,6 +7,8 @@ import pkgutil
 import importlib
 from pathlib import Path
 
+from . import assign_meta
+
 __all__ = (
     "init",
     "register",
@@ -221,10 +223,10 @@ class FBX2RigifyPanel(bpy.types.Panel):
 
         obj = context.object
 
-        # row = layout.row()
-        # row.label(text="Hello world!", icon="WORLD_DATA")
+        row = layout.row()
+        row.label(text="Turn AS to Rigify!", icon="WORLD_DATA")
 
-        # NOTE: won't work with a Bone selected in Pose Mode
+        # NOTE: `object.name` won't work with a Bone selected in Pose Mode
         # row = layout.row()
         # row.label(text="Active object is: " + obj.name)
         # row = layout.row()
@@ -234,25 +236,9 @@ class FBX2RigifyPanel(bpy.types.Panel):
         # row.operator("mesh.primitive_cube_add")
 
         row = layout.row()
-        row.operator(SimpleOperator.bl_idname, text="Assign Limb")
+        row.operator(assign_meta.AssignMeta.bl_idname, text="Assign Hip as Leg")
 
 
 # ------------------------------------------------------------------------
 #    Operators
 # ------------------------------------------------------------------------
-
-
-class SimpleOperator(bpy.types.Operator):
-    """Print object name in Console"""
-
-    bl_idname = "object.simple_operator"
-    bl_label = "Simple Object Operator"
-
-    def execute(self, context):
-        # print(context.object)
-
-        print("Convert to Limb")
-        bpy.ops.object.posemode_toggle()
-        bpy.context.active_pose_bone.rigify_type = "limbs.leg"
-
-        return {"FINISHED"}
