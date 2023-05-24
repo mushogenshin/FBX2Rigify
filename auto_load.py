@@ -249,7 +249,7 @@ class FBX2RigifyPanel(bpy.types.Panel):
         row = layout.row()
         row.operator(prep_xforms.HeelPrep.bl_idname, text="Prep Heel")
 
-        # obj = context.object
+        obj = context.object
 
         # NOTE: `object.name` won't work with a Bone selected in Pose Mode
         # row = layout.row()
@@ -260,13 +260,15 @@ class FBX2RigifyPanel(bpy.types.Panel):
         # row = layout.row()
         # row.operator("mesh.primitive_cube_add")
 
-        layout.separator()
+        if obj.mode == "POSE":
+            # only show this section if we're in POSE mode
+            layout.separator()
 
-        row = layout.row()
-        row.label(text="OPERATE ON SELECTION:", icon="MOD_ARMATURE")
+            row = layout.row()
+            row.label(text="OPERATE ON SELECTION:", icon="MOD_ARMATURE")
 
-        row = layout.row()
-        row.operator(assign_meta.AssignMeta.bl_idname, text="Assign as Leg")
+            row = layout.row()
+            row.operator(assign_meta.AssignLeg.bl_idname, text="Assign as Leg")
 
 
 # ------------------------------------------------------------------------
