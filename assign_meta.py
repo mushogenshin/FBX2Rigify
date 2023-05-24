@@ -1,5 +1,9 @@
-import bpy
+"""Assign Rigify metarig to selected bone"""
+
 import logging
+import bpy
+
+from . import user_fields
 
 logger = logging.getLogger(__name__)
 
@@ -77,6 +81,7 @@ class AssignMeta(bpy.types.Operator):
     def execute(self, context):
         logger.info("Converting to Leg Metarig")
 
+        # TODO: use active selection instead of hard-coded bone names
         select_pose_bone("Hip")
         bpy.context.active_pose_bone.rigify_type = "limbs.leg"
 

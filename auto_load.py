@@ -8,6 +8,8 @@ import importlib
 from pathlib import Path
 
 from . import assign_meta
+from . import prep_xforms
+from . import user_fields
 
 __all__ = (
     "init",
@@ -33,19 +35,25 @@ def register():
     for cls in ordered_classes:
         bpy.utils.register_class(cls)
 
+    # this already includes
+    # bpy.utils.register_class(FBX2RigifyPanel)
+
     for module in modules:
         if module.__name__ == __name__:
             continue
         if hasattr(module, "register"):
             module.register()
 
-    # no need:
-    # bpy.utils.register_class(FBX2RigifyPanel)
+    for prop_name, prop_value in user_fields._PROPERTIES:
+        setattr(bpy.types.Scene, prop_name, prop_value)
 
 
 def unregister():
     for cls in reversed(ordered_classes):
         bpy.utils.unregister_class(cls)
+
+    # this already includes
+    # bpy.utils.unregister_class(FBX2RigifyPanel)
 
     for module in modules:
         if module.__name__ == __name__:
@@ -53,8 +61,8 @@ def unregister():
         if hasattr(module, "unregister"):
             module.unregister()
 
-    # no need:
-    # bpy.utils.unregister_class(FBX2RigifyPanel)
+    for prop_name, _ in user_fields._PROPERTIES:
+        delattr(bpy.types.Scene, prop_name)
 
 
 # Import modules
@@ -221,10 +229,27 @@ class FBX2RigifyPanel(bpy.types.Panel):
     def draw(self, context):
         layout = self.layout
 
-        obj = context.object
+        # header
+        row = layout.row()
+        row.label(text="Turn AS to Rigify!", icon="ARMATURE_DATA")
+
+        layout.separator()
+
+        # display all the custom properties in a column
+        col = layout.column()
+
+        for prop_name, _ in user_fields._PROPERTIES:
+            row = col.row()
+            row.prop(context.scene, prop_name)
 
         row = layout.row()
-        row.label(text="Turn AS to Rigify!", icon="WORLD_DATA")
+        row.label(text="PLACE HELPERS:", icon="BONE_DATA")
+
+        # all the transform helpers
+        row = layout.row()
+        row.operator(prep_xforms.HeelPrep.bl_idname, text="Prep Heel")
+
+        # obj = context.object
 
         # NOTE: `object.name` won't work with a Bone selected in Pose Mode
         # row = layout.row()
@@ -235,8 +260,13 @@ class FBX2RigifyPanel(bpy.types.Panel):
         # row = layout.row()
         # row.operator("mesh.primitive_cube_add")
 
+        layout.separator()
+
         row = layout.row()
-        row.operator(assign_meta.AssignMeta.bl_idname, text="Assign Hip as Leg")
+        row.label(text="OPERATE ON SELECTION:", icon="MOD_ARMATURE")
+
+        row = layout.row()
+        row.operator(assign_meta.AssignMeta.bl_idname, text="Assign as Leg")
 
 
 # ------------------------------------------------------------------------
