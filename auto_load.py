@@ -242,14 +242,16 @@ class FBX2RigifyPanel(bpy.types.Panel):
             row = col.row()
             row.prop(context.scene, prop_name)
 
-        row = layout.row()
-        row.label(text="PLACE HELPERS:", icon="BONE_DATA")
-
-        # all the transform helpers
-        row = layout.row()
-        row.operator(prep_xforms.HeelPrep.bl_idname, text="Prep Heel")
-
         obj = context.object
+
+        if obj.mode == "EDIT":
+            # only show this section if we're in EDIT mode
+            row = layout.row()
+            row.label(text="PLACE HELPERS:", icon="BONE_DATA")
+
+            # all the transform helpers
+            row = layout.row()
+            row.operator(prep_xforms.HeelPrep.bl_idname, text="Prep Heel")
 
         # NOTE: `object.name` won't work with a Bone selected in Pose Mode
         # row = layout.row()

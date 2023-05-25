@@ -1,21 +1,8 @@
 """Assign Rigify metarig to selected bone"""
 
-import logging
 import bpy
 
-from . import user_fields
-
-logger = logging.getLogger(__name__)
-
-
-def is_not_armature(obj):
-    """See if the active object is an armature, or if there is no active object"""
-    is_true = (not obj) or (bpy.context.object.type != "ARMATURE")
-
-    if is_true:
-        logger.error("No armature selected")
-
-    return is_true
+from .shared import *
 
 
 def switch_to_mode(mode):
@@ -56,7 +43,7 @@ def select_edit_bone(bone_name):
     if bone_name in edit_bones:
         edit_bones[bone_name].select = True
     else:
-        logger.error(f"No bone named {bone_name} in armature {obj.name}")
+        print(f"No bone named {bone_name} in armature {obj.name}")
 
 
 # ------------------------------------------------------------------------
@@ -86,7 +73,7 @@ def select_pose_bone(bone_name):
         # IMPORTANT: must include this line to make the bone active
         obj.data.bones.active = target_bone.bone
     else:
-        logger.error(f"No bone named {bone_name} in armature {obj.name}")
+        print(f"No bone named {bone_name} in armature {obj.name}")
 
 
 # ------------------------------------------------------------------------
@@ -101,7 +88,7 @@ class AssignLeg(bpy.types.Operator):
     bl_label = "Assign limbs.leg Metarig"
 
     def execute(self, context):
-        # NOTE: We're relying on the user to be in the correct mode (POSE mode)
+        # NOTE: We're relying on the user to be in the correct mode (`POSE` mode)
         # to use this operator
 
         obj = bpy.context.object
@@ -109,12 +96,8 @@ class AssignLeg(bpy.types.Operator):
         if is_not_armature(obj):
             return {"CANCELLED"}
 
-        # Get all selected bones
-        selected_bones = [bone for bone in obj.pose.bones if bone.bone.select]
-
-        for bone in selected_bones:
-            logger.info(f"Assigning limbs.leg metarig to {bone.name}")
-            # bpy.context.active_pose_bone.rigify_type = "limbs.leg"
+        for bone in ls_selected_pose_bones(obj):
+            print(f'Assigning "limbs.leg" metarig to {bone.name}')
             bone.rigify_type = "limbs.leg"
 
         return {"FINISHED"}
