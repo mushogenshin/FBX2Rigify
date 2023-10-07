@@ -7,8 +7,9 @@ import pkgutil
 import importlib
 from pathlib import Path
 
+from .core import assign_meta
+from .core import prep_xforms
 from . import user_fields
-from .core import prep_xforms, assign_meta
 
 __all__ = (
     "init",

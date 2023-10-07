@@ -5,6 +5,10 @@ import mathutils
 
 from ..shared import *
 
+# ------------------------------------------------------------------------
+#    PREP TRANSFORMS
+# ------------------------------------------------------------------------
+
 
 class HeelPrep(bpy.types.Operator):
     """
@@ -17,13 +21,15 @@ class HeelPrep(bpy.types.Operator):
     bl_label = "Prep Heel Bone"
 
     def execute(self, context):
-        # NOTE: We're relying on the user to be in the correct mode (`EDIT` mode)
-        # to use this operator
-
         obj = bpy.context.object
 
+        # We need to be in the `EDIT` mode to use this operator
+        if obj.mode == "OBJECT":
+            switch_to_mode("EDIT")
+            return {"CANCELLED"}
+
         if is_not_armature(obj):
-            return
+            return {"CANCELLED"}
 
         print("Creating Heel bone for leg metarig")
 
