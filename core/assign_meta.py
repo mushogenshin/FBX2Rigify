@@ -2,7 +2,7 @@
 
 import bpy
 
-from .shared import *
+from ..shared import *
 
 
 def switch_to_mode(mode):

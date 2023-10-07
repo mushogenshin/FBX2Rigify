@@ -3,7 +3,7 @@
 import bpy
 import mathutils
 
-from .shared import *
+from ..shared import *
 
 
 class HeelPrep(bpy.types.Operator):
