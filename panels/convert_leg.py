@@ -1,7 +1,9 @@
 import bpy
+import logging
 import mathutils
 
-from ..shared import *
+# constant prop name tagged to initialized object in order to display immediate-mode-style UI
+__IS_LEG__ = "fbx2rigify_leg"
 
 
 class FBX2LegMeta(bpy.types.Panel):
@@ -12,13 +14,23 @@ class FBX2LegMeta(bpy.types.Panel):
     bl_space_type = "VIEW_3D"
     bl_region_type = "UI"
     bl_category = "FBX2Rigify"
-    bl_parent_id = "OBJECT_PT_fbx2rigify"
+#    bl_parent_id = "OBJECT_PT_fbx2rigify"
     # bl_options = {"DEFAULT_CLOSED"}
 
     def draw(self, context):
         layout = self.layout
 
+        if not context.selected_objects:
+            layout.label(text="Select a leg armature to start")
+            return
+
         obj = context.active_object
+
+        if __IS_LEG__ not in obj:
+            box = layout.box()
+            box.label(text="Initialize As Working Leg")
+            box.operator(InitLeg.bl_idname, text="Go")
+            return
 
         row = layout.row()
         row.label(text="Place Helpers:")
@@ -31,11 +43,6 @@ class FBX2LegMeta(bpy.types.Panel):
         # NOTE: `object.name` won't work with a Bone selected in Pose Mode
         # row = layout.row()
         # row.label(text="Active object is: " + obj.name)
-        # row = layout.row()
-        # row.prop(obj, "name")
-
-        # row = layout.row()
-        # row.operator("mesh.primitive_cube_add")
 
         layout.separator()
         row = layout.row()
@@ -45,6 +52,34 @@ class FBX2LegMeta(bpy.types.Panel):
         row.operator(AssignLeg.bl_idname,
                      text="Assign as Leg", icon="MOD_ARMATURE")
 
+        layout.separator()
+        row = layout.row()
+        row.operator(UninitLeg.bl_idname, text="Discard", icon="CANCEL")
+
+
+class InitLeg(bpy.types.Operator):
+    """Tag the selected object as a FBX working leg"""
+
+    bl_idname = "fbx2rigify.init_leg"
+    bl_label = "Tag Object as FBX Working Leg"
+
+    def execute(self, context):
+        obj = bpy.context.active_object
+        obj[__IS_LEG__] = True
+        return {"FINISHED"}
+
+
+class UninitLeg(bpy.types.Operator):
+    """Untag the selected object as a FBX working leg"""
+
+    bl_idname = "fbx2rigify.uninit_leg"
+    bl_label = "Untag Object as FBX Working Leg"
+
+    def execute(self, context):
+        obj = bpy.context.active_object
+        del obj[__IS_LEG__]
+        return {"FINISHED"}
+
 
 class HeelPrep(bpy.types.Operator):
     """
@@ -53,7 +88,7 @@ class HeelPrep(bpy.types.Operator):
     Otherwise, the Heel is placed near the selected bone.
     """
 
-    bl_idname = "object.heel_prep"
+    bl_idname = "fbx2rigify.heel_prep"
     bl_label = "Prep Heel Bone"
 
     def execute(self, context):
@@ -102,7 +137,7 @@ class HeelPrep(bpy.types.Operator):
 class AssignLeg(bpy.types.Operator):
     """Assign leg metarig to selected bones"""
 
-    bl_idname = "object.assign_metarig_leg"
+    bl_idname = "fbx2rigify.assign_leg"
     bl_label = "Assign limbs.leg Metarig"
 
     def execute(self, context):
@@ -125,6 +160,8 @@ class AssignLeg(bpy.types.Operator):
 
 
 def register():
+    bpy.utils.register_class(InitLeg)
+    bpy.utils.register_class(UninitLeg)
     bpy.utils.register_class(HeelPrep)
     bpy.utils.register_class(AssignLeg)
     bpy.utils.register_class(FBX2LegMeta)
@@ -134,3 +171,41 @@ def unregister():
     bpy.utils.unregister_class(FBX2LegMeta)
     bpy.utils.unregister_class(AssignLeg)
     bpy.utils.unregister_class(HeelPrep)
+    bpy.utils.unregister_class(UninitLeg)
+    bpy.utils.unregister_class(InitLeg)
+
+########################################################################################################################
+
+
+if __name__ == "__main__":
+
+    def switch_to_mode(mode: str):
+        """Switch to the specified mode"""
+
+        # Get the current mode
+        current_mode = bpy.context.active_object.mode
+
+        if current_mode == mode:
+            return
+
+        bpy.ops.object.mode_set(mode=mode)
+
+    def is_not_armature():
+        """See if the active object is an armature, or if there is no active object"""
+        obj = bpy.context.active_object
+        is_true = (not obj) or (obj.type != "ARMATURE")
+
+        if is_true:
+            print("No armature selected")
+
+        return is_true
+
+    def ls_selected_edit_bones():
+        obj = bpy.context.active_object
+        return [bone for bone in obj.data.edit_bones if bone.select]
+
+    def ls_selected_pose_bones(obj=None):
+        obj = bpy.context.active_object
+        return [bone for bone in obj.pose.bones if bone.bone.select]
+
+    register()
