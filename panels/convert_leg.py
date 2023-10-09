@@ -19,7 +19,7 @@ class FBX2LegMeta(bpy.types.Panel):
     def draw(self, context):
         layout = self.layout
 
-        obj = context.object
+        obj = context.active_object
 
         row = layout.row()
         row.label(text="Place Helpers:")

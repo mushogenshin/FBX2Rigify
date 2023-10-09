@@ -55,10 +55,10 @@ def unregister():
     for cls in reversed(ordered_classes):
         bpy.utils.unregister_class(cls)
 
-    bpy.utils.unregister_class(prep_xforms.HeelPrep)
-    bpy.utils.unregister_class(assign_meta.AssignLeg)
     bpy.utils.unregister_class(convert_leg.FBX2LegMeta)
-    # NOTE: manually unregister all other operators here
+    bpy.utils.unregister_class(assign_meta.AssignLeg)
+    bpy.utils.unregister_class(prep_xforms.HeelPrep)
+    # NOTE: manually unregister all other operators here in reverse order
 
     for module in modules:
         if module.__name__ == __name__:

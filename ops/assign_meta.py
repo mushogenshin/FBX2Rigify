@@ -17,7 +17,7 @@ class AssignLeg(bpy.types.Operator):
     bl_label = "Assign limbs.leg Metarig"
 
     def execute(self, context):
-        obj = bpy.context.object
+        obj = bpy.context.active_object
 
         # We need to be in the `POSE` mode to use this operator
         if obj.mode != "POSE":

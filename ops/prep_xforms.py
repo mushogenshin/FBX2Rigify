@@ -21,7 +21,7 @@ class HeelPrep(bpy.types.Operator):
     bl_label = "Prep Heel Bone"
 
     def execute(self, context):
-        obj = bpy.context.object
+        obj = bpy.context.active_object
 
         # We need to be in the `EDIT` mode to use this operator
         if obj.mode == "OBJECT":
