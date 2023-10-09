@@ -28,7 +28,8 @@ class HeelPrep(bpy.types.Operator):
             switch_to_mode("EDIT")
             return {"CANCELLED"}
 
-        if is_not_armature(obj):
+        # User now is in the right mode
+        if is_not_armature():
             return {"CANCELLED"}
 
         print("Creating Heel bone for leg metarig")
@@ -39,7 +40,7 @@ class HeelPrep(bpy.types.Operator):
         # NOTE: After creation, the bone's head and tail position MUST be set
 
         # In case user has selected "some" foot bone
-        selection = ls_selected_edit_bones(obj)
+        selection = ls_selected_edit_bones()
 
         if selection:
             foot_bone = selection[0]

@@ -24,10 +24,11 @@ class AssignLeg(bpy.types.Operator):
             switch_to_mode("POSE")
             return {"CANCELLED"}
 
-        if is_not_armature(obj):
+        # User now is in the right mode
+        if is_not_armature():
             return {"CANCELLED"}
 
-        for bone in ls_selected_pose_bones(obj):
+        for bone in ls_selected_pose_bones():
             print(f'Assigning "limbs.leg" metarig to {bone.name}')
             bone.rigify_type = "limbs.leg"
 

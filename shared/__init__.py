@@ -2,7 +2,7 @@ import logging
 import bpy
 
 
-def switch_to_mode(mode):
+def switch_to_mode(mode: str):
     """Switch to the specified mode"""
 
     # Get the current mode
@@ -14,9 +14,10 @@ def switch_to_mode(mode):
     bpy.ops.object.mode_set(mode=mode)
 
 
-def is_not_armature(obj):
+def is_not_armature():
     """See if the active object is an armature, or if there is no active object"""
-    is_true = (not obj) or (bpy.context.object.type != "ARMATURE")
+    obj = bpy.context.object
+    is_true = (not obj) or (obj.type != "ARMATURE")
 
     if is_true:
         print("No armature selected")
@@ -28,9 +29,8 @@ def is_not_armature(obj):
 #    EDIT MODE
 # ------------------------------------------------------------------------
 
-def ls_selected_edit_bones(obj=None):
-    if not obj:
-        obj = bpy.context.object
+def ls_selected_edit_bones():
+    obj = bpy.context.object
     return [bone for bone in obj.data.edit_bones if bone.select]
 
 
@@ -42,15 +42,15 @@ def deselect_edit():
         bone.select = False
 
 
-def select_edit_bone(bone_name):
+def select_edit_bone(bone_name: str):
     """Make the specified bone selected in EDIT mode"""
 
-    obj = bpy.context.object
     if is_not_armature(obj):
         return
 
     deselect_edit()
 
+    obj = bpy.context.object
     edit_bones = obj.data.edit_bones
     if bone_name in edit_bones:
         edit_bones[bone_name].select = True
@@ -63,8 +63,7 @@ def select_edit_bone(bone_name):
 # ------------------------------------------------------------------------
 
 def ls_selected_pose_bones(obj=None):
-    if not obj:
-        obj = bpy.context.object
+    obj = bpy.context.object
     return [bone for bone in obj.pose.bones if bone.bone.select]
 
 
@@ -74,15 +73,15 @@ def deselect_pose():
     bpy.ops.pose.select_all(action="DESELECT")
 
 
-def select_pose_bone(bone_name):
+def select_pose_bone(bone_name: str):
     """Make the specified bone selected and active in POSE mode"""
 
-    obj = bpy.context.object
-    if is_not_armature(obj):
+    if is_not_armature():
         return
 
     deselect_pose()
 
+    obj = bpy.context.object
     pose_bones = obj.pose.bones
     if bone_name in pose_bones:
         target_bone = pose_bones[bone_name]
