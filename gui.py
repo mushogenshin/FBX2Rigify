@@ -28,13 +28,14 @@ class FBX2RigifyPanel(bpy.types.Panel):
 
         # header
         row = layout.row()
-        row.label(text="Turn AS to Rigify!", icon="ARMATURE_DATA")
+        row.label(text="Turn FBX Skeleton to Rigify!", icon="ARMATURE_DATA")
 
-        layout.separator()
+        if user_fields._PROPERTIES:
+            # display all the custom properties in a column
+            col = layout.column()
 
-        # display all the custom properties in a column
-        col = layout.column()
+            for prop_name, _ in user_fields._PROPERTIES:
+                row = col.row()
+                row.prop(context.scene, prop_name)
 
-        for prop_name, _ in user_fields._PROPERTIES:
-            row = col.row()
-            row.prop(context.scene, prop_name)
+            layout.separator()

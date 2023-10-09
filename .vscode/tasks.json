@@ -2,9 +2,15 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "Copy to Addons",
+            "label": "⚙️ Copy to System Addons",
             "type": "shell",
-            "command": "./scripts/copy_to_addons.sh",
+            "command": "./scripts/deploy_as_system.sh",
+            "problemMatcher": []
+        },
+        {
+            "label": "🙆‍♀️ Link to User Addons",
+            "type": "shell",
+            "command": "./scripts/deploy_as_user.sh",
             "problemMatcher": []
         }
     ]

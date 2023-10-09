@@ -8,7 +8,7 @@ from .. import user_fields
 class FBX2LegMeta(bpy.types.Panel):
     """Creates a Panel. This is automatically registered with the global `register` function"""
 
-    bl_label = "Convert to Leg MetaRig"
+    bl_label = "🦿 Convert Leg"
     bl_idname = "OBJECT_PT_fbx2legmeta"
     bl_space_type = "VIEW_3D"
     bl_region_type = "UI"
@@ -22,11 +22,12 @@ class FBX2LegMeta(bpy.types.Panel):
         obj = context.object
 
         row = layout.row()
-        row.label(text="PLACE HELPERS:", icon="BONE_DATA")
+        row.label(text="Place Helpers:")
 
         # all the transform helpers
         row = layout.row()
-        row.operator(prep_xforms.HeelPrep.bl_idname, text="Prep Heel")
+        row.operator(prep_xforms.HeelPrep.bl_idname,
+                     text="Prep Heel", icon="BONE_DATA")
 
         # NOTE: `object.name` won't work with a Bone selected in Pose Mode
         # row = layout.row()
@@ -39,7 +40,8 @@ class FBX2LegMeta(bpy.types.Panel):
 
         layout.separator()
         row = layout.row()
-        row.label(text="OPERATE ON SELECTION:", icon="MOD_ARMATURE")
+        row.label(text="Operate On Selection:")
 
         row = layout.row()
-        row.operator(assign_meta.AssignLeg.bl_idname, text="Assign as Leg")
+        row.operator(assign_meta.AssignLeg.bl_idname,
+                     text="Assign as Leg", icon="MOD_ARMATURE")
