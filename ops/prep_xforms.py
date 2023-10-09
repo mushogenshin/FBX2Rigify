@@ -6,7 +6,7 @@ import mathutils
 from ..shared import *
 
 # ------------------------------------------------------------------------
-#    PREP TRANSFORMS
+#    PREP TRANSFORMS NEEDED FOR RIGIFY METARIGS
 # ------------------------------------------------------------------------
 
 

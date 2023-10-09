@@ -1,7 +1,5 @@
 import bpy
 
-from .core import assign_meta
-from .core import prep_xforms
 from . import user_fields
 
 
@@ -40,33 +38,3 @@ class FBX2RigifyPanel(bpy.types.Panel):
         for prop_name, _ in user_fields._PROPERTIES:
             row = col.row()
             row.prop(context.scene, prop_name)
-
-        obj = context.object
-
-        row = layout.row()
-        row.label(text="PLACE HELPERS:", icon="BONE_DATA")
-
-        # all the transform helpers
-        row = layout.row()
-        row.operator(prep_xforms.HeelPrep.bl_idname, text="Prep Heel")
-
-        # NOTE: `object.name` won't work with a Bone selected in Pose Mode
-        # row = layout.row()
-        # row.label(text="Active object is: " + obj.name)
-        # row = layout.row()
-        # row.prop(obj, "name")
-
-        # row = layout.row()
-        # row.operator("mesh.primitive_cube_add")
-
-        layout.separator()
-        row = layout.row()
-        row.label(text="OPERATE ON SELECTION:", icon="MOD_ARMATURE")
-
-        row = layout.row()
-        row.operator(assign_meta.AssignLeg.bl_idname, text="Assign as Leg")
-
-
-# ------------------------------------------------------------------------
-#    Operators
-# ------------------------------------------------------------------------

@@ -7,9 +7,10 @@ import pkgutil
 import importlib
 from pathlib import Path
 
-from .core import assign_meta
-from .core import prep_xforms
 from . import user_fields
+from .ops import assign_meta
+from .ops import prep_xforms
+from .panels import convert_leg
 
 __all__ = (
     "init",
@@ -37,6 +38,7 @@ def register():
 
     bpy.utils.register_class(prep_xforms.HeelPrep)
     bpy.utils.register_class(assign_meta.AssignLeg)
+    bpy.utils.register_class(convert_leg.FBX2LegMeta)
     # NOTE: manually register all other operators here
 
     for module in modules:
@@ -55,6 +57,7 @@ def unregister():
 
     bpy.utils.unregister_class(prep_xforms.HeelPrep)
     bpy.utils.unregister_class(assign_meta.AssignLeg)
+    bpy.utils.unregister_class(convert_leg.FBX2LegMeta)
     # NOTE: manually unregister all other operators here
 
     for module in modules:
