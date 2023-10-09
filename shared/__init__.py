@@ -2,42 +2,15 @@ import logging
 import bpy
 
 
-def switch_to_mode(mode: str):
-    """Switch to the specified mode"""
-
-    # Get the current mode
-    current_mode = bpy.context.active_object.mode
-
-    if current_mode == mode:
-        return
-
-    bpy.ops.object.mode_set(mode=mode)
-
-
-def is_not_armature():
-    """See if the active object is an armature, or if there is no active object"""
-    obj = bpy.context.active_object
-    is_true = (not obj) or (obj.type != "ARMATURE")
-
-    if is_true:
-        print("No armature selected")
-
-    return is_true
-
-
 # ------------------------------------------------------------------------
 #    EDIT MODE
 # ------------------------------------------------------------------------
-
-def ls_selected_edit_bones():
-    obj = bpy.context.active_object
-    return [bone for bone in obj.data.edit_bones if bone.select]
-
 
 def deselect_edit():
     """Deselect all bones in EDIT mode"""
     switch_to_mode("EDIT")
 
+    # NOTE: see if we should use bpy.context.selected_objects instead
     for bone in bpy.context.active_object.data.edit_bones:
         bone.select = False
 
@@ -45,11 +18,12 @@ def deselect_edit():
 def select_edit_bone(bone_name: str):
     """Make the specified bone selected in EDIT mode"""
 
-    if is_not_armature(obj):
+    if is_not_armature():
         return
 
     deselect_edit()
 
+    # NOTE: see if we should use bpy.context.selected_objects instead
     obj = bpy.context.active_object
     edit_bones = obj.data.edit_bones
     if bone_name in edit_bones:
@@ -61,10 +35,6 @@ def select_edit_bone(bone_name: str):
 # ------------------------------------------------------------------------
 #    POSE MODE
 # ------------------------------------------------------------------------
-
-def ls_selected_pose_bones(obj=None):
-    obj = bpy.context.active_object
-    return [bone for bone in obj.pose.bones if bone.bone.select]
 
 
 def deselect_pose():
@@ -81,6 +51,7 @@ def select_pose_bone(bone_name: str):
 
     deselect_pose()
 
+    # NOTE: see if we should use bpy.context.selected_objects instead
     obj = bpy.context.active_object
     pose_bones = obj.pose.bones
     if bone_name in pose_bones:

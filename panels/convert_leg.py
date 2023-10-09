@@ -19,12 +19,22 @@ class FBX2LegMeta(bpy.types.Panel):
 
     def draw(self, context):
         layout = self.layout
+        selected = context.selected_objects
 
-        if not context.selected_objects:
+        # Filter for armatures
+        armatures = [obj for obj in selected if obj.type == "ARMATURE"]
+
+        if not armatures:
             layout.label(text="Select a leg armature to start")
             return
 
-        obj = context.active_object
+        if len(armatures) > 1:
+            layout.label(text="Please work on one leg at a time")
+            return
+
+        obj = armatures[0]
+        row = layout.row()
+        row.prop(obj, "name", text="Target")
 
         if __IS_LEG__ not in obj:
             box = layout.box()
@@ -182,8 +192,12 @@ if __name__ == "__main__":
     def switch_to_mode(mode: str):
         """Switch to the specified mode"""
 
+        objs = bpy.context.selected_objects
+        if not objs:
+            return
+
         # Get the current mode
-        current_mode = bpy.context.active_object.mode
+        current_mode = objs[0].mode
 
         if current_mode == mode:
             return
@@ -191,21 +205,27 @@ if __name__ == "__main__":
         bpy.ops.object.mode_set(mode=mode)
 
     def is_not_armature():
-        """See if the active object is an armature, or if there is no active object"""
-        obj = bpy.context.active_object
-        is_true = (not obj) or (obj.type != "ARMATURE")
+        """
+        See if the selected object is NOT an armature.
+        Return True if there is no object selected
+        """
 
-        if is_true:
-            print("No armature selected")
+        objs = bpy.context.selected_objects
+        if not objs:
+            return True
 
-        return is_true
+        return objs[0].type != "ARMATURE"
 
     def ls_selected_edit_bones():
-        obj = bpy.context.active_object
-        return [bone for bone in obj.data.edit_bones if bone.select]
+        objs = bpy.context.selected_objects
+        if not objs:
+            return []
+        return [bone for bone in objs[0].data.edit_bones if bone.select]
 
     def ls_selected_pose_bones(obj=None):
-        obj = bpy.context.active_object
-        return [bone for bone in obj.pose.bones if bone.bone.select]
+        objs = bpy.context.selected_objects
+        if not objs:
+            return []
+        return [bone for bone in objs[0].pose.bones if bone.bone.select]
 
     register()
