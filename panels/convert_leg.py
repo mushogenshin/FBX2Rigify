@@ -72,8 +72,12 @@ class FBX2LegMeta(bpy.types.Panel):
         row.operator(HeelPrep.bl_idname,
                      text=label, icon="BONE_DATA")
 
+        thigh = obj.pose.bones[0]
+        assigned = thigh.rigify_type if hasattr(
+            thigh, "rigify_type") else None
+
         # only allows assigning leg metarig if the bone count suffices
-        if bone_count >= __REQUIRED_BONE_NUM__:
+        if not assigned and bone_count >= __REQUIRED_BONE_NUM__:
             layout.separator()
             row = layout.row()
             row.label(text="Assign Metarig:")
@@ -90,11 +94,8 @@ class FBX2LegMeta(bpy.types.Panel):
             row.operator(AssignLeg.bl_idname,
                          text=label, icon="OUTLINER_DATA_GP_LAYER")
 
-        # thigh = get_nth_bone(obj, 0)
         # row = layout.row()
-        # row.label(text=thigh.name)
-        # meta = thigh.rigify_type if hasattr(thigh, "rigify_type") else "non-existent"
-        # row.label(text=meta)
+        # row.label(text="TODO: Generate Rig?")
 
         # allows discarding the working object nonetheless
         layout.separator()
@@ -258,12 +259,5 @@ if __name__ == "__main__":
         if not objs:
             return []
         return [bone for bone in objs[0].pose.bones if bone.bone.select]
-
-    def get_nth_bone(armature, n):
-        """
-            Args:
-                armature (bpy.types.Object): The armature object
-        """
-        return armature.data.bones[0] or armature.data.edit_bones[0] or armature.pose.bones[0]
 
     register()
