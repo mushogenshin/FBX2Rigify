@@ -90,6 +90,12 @@ class FBX2LegMeta(bpy.types.Panel):
             row.operator(AssignLeg.bl_idname,
                          text=label, icon="OUTLINER_DATA_GP_LAYER")
 
+        # thigh = get_nth_bone(obj, 0)
+        # row = layout.row()
+        # row.label(text=thigh.name)
+        # meta = thigh.rigify_type if hasattr(thigh, "rigify_type") else "non-existent"
+        # row.label(text=meta)
+
         # allows discarding the working object nonetheless
         layout.separator()
         row = layout.row()
@@ -131,15 +137,13 @@ class HeelPrep(bpy.types.Operator):
     bl_label = "Prep Heel Bone"
 
     def execute(self, context):
+        """IMPORTANT: caller is responsible to make sure an armature is selected"""
+
         obj = bpy.context.active_object
 
         # We need to be in the `EDIT` mode to use this operator
         if obj.mode == "OBJECT":
             switch_to_mode("EDIT")
-            return {"CANCELLED"}
-
-        # User now is in the right mode
-        if is_not_armature():
             return {"CANCELLED"}
 
         print("Creating Heel bone for leg metarig")
@@ -180,15 +184,13 @@ class AssignLeg(bpy.types.Operator):
     bl_label = "Assign limbs.leg Metarig"
 
     def execute(self, context):
+        """IMPORTANT: caller is responsible to make sure an armature is selected"""
+
         obj = bpy.context.active_object
 
         # We need to be in the `POSE` mode to use this operator
         if obj.mode != "POSE":
             switch_to_mode("POSE")
-            return {"CANCELLED"}
-
-        # User now is in the right mode
-        if is_not_armature():
             return {"CANCELLED"}
 
         for bone in ls_selected_pose_bones():
@@ -233,17 +235,17 @@ if __name__ == "__main__":
 
         bpy.ops.object.mode_set(mode=mode)
 
-    def is_not_armature():
-        """
-        See if the selected object is NOT an armature.
-        Return True if there is no object selected
-        """
+    # def is_not_armature():
+    #     """
+    #     See if the selected object is NOT an armature.
+    #     Return True if there is no object selected
+    #     """
 
-        objs = bpy.context.selected_objects
-        if not objs:
-            return True
+    #     objs = bpy.context.selected_objects
+    #     if not objs:
+    #         return True
 
-        return objs[0].type != "ARMATURE"
+    #     return objs[0].type != "ARMATURE"
 
     def ls_selected_edit_bones():
         objs = bpy.context.selected_objects
@@ -256,5 +258,12 @@ if __name__ == "__main__":
         if not objs:
             return []
         return [bone for bone in objs[0].pose.bones if bone.bone.select]
+
+    def get_nth_bone(armature, n):
+        """
+            Args:
+                armature (bpy.types.Object): The armature object
+        """
+        return armature.data.bones[0] or armature.data.edit_bones[0] or armature.pose.bones[0]
 
     register()
