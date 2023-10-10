@@ -25,6 +25,7 @@ class FBX2RigifyPanel(bpy.types.Panel):
 
     def draw(self, context):
         layout = self.layout
+        selected = context.selected_objects
 
         # header
         row = layout.row()
@@ -39,3 +40,13 @@ class FBX2RigifyPanel(bpy.types.Panel):
                 row.prop(context.scene, prop_name)
 
             layout.separator()
+
+        # filters for armatures only
+        armatures = [obj for obj in selected if obj.type == "ARMATURE"]
+
+        if armatures:
+            # # sees if some bone is already assigned some metarig
+            # maybe_assigned = any(bone.rigify_type for bone in obj.pose.bones)
+            row = layout.row()
+            row.operator("pose.rigify_generate",
+                         text="Generate Rig", icon="HEART")

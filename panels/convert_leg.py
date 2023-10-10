@@ -72,12 +72,8 @@ class FBX2LegMeta(bpy.types.Panel):
         row.operator(HeelPrep.bl_idname,
                      text=label, icon="BONE_DATA")
 
-        thigh = obj.pose.bones[0]
-        assigned = thigh.rigify_type if hasattr(
-            thigh, "rigify_type") else None
-
         # only allows assigning leg metarig if the bone count suffices
-        if not assigned and bone_count >= __REQUIRED_BONE_NUM__:
+        if bone_count >= __REQUIRED_BONE_NUM__:
             layout.separator()
             row = layout.row()
             row.label(text="Assign Metarig:")
@@ -93,9 +89,6 @@ class FBX2LegMeta(bpy.types.Panel):
             row = layout.row()
             row.operator(AssignLeg.bl_idname,
                          text=label, icon="OUTLINER_DATA_GP_LAYER")
-
-        # row = layout.row()
-        # row.label(text="TODO: Generate Rig?")
 
         # allows discarding the working object nonetheless
         layout.separator()
@@ -219,45 +212,35 @@ def unregister():
 ########################################################################################################################
 
 
+def switch_to_mode(mode: str):
+    """Switch to the specified mode"""
+
+    objs = bpy.context.selected_objects
+    if not objs:
+        return
+
+    # Get the current mode
+    current_mode = objs[0].mode
+
+    if current_mode == mode:
+        return
+
+    bpy.ops.object.mode_set(mode=mode)
+
+
+def ls_selected_edit_bones():
+    objs = bpy.context.selected_objects
+    if not objs:
+        return []
+    return [bone for bone in objs[0].data.edit_bones if bone.select]
+
+
+def ls_selected_pose_bones():
+    objs = bpy.context.selected_objects
+    if not objs:
+        return []
+    return [bone for bone in objs[0].pose.bones if bone.bone.select]
+
+
 if __name__ == "__main__":
-
-    def switch_to_mode(mode: str):
-        """Switch to the specified mode"""
-
-        objs = bpy.context.selected_objects
-        if not objs:
-            return
-
-        # Get the current mode
-        current_mode = objs[0].mode
-
-        if current_mode == mode:
-            return
-
-        bpy.ops.object.mode_set(mode=mode)
-
-    # def is_not_armature():
-    #     """
-    #     See if the selected object is NOT an armature.
-    #     Return True if there is no object selected
-    #     """
-
-    #     objs = bpy.context.selected_objects
-    #     if not objs:
-    #         return True
-
-    #     return objs[0].type != "ARMATURE"
-
-    def ls_selected_edit_bones():
-        objs = bpy.context.selected_objects
-        if not objs:
-            return []
-        return [bone for bone in objs[0].data.edit_bones if bone.select]
-
-    def ls_selected_pose_bones(obj=None):
-        objs = bpy.context.selected_objects
-        if not objs:
-            return []
-        return [bone for bone in objs[0].pose.bones if bone.bone.select]
-
     register()

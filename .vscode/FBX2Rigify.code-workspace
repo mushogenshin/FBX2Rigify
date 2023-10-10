@@ -1,13 +1,10 @@
 {
-	"folders": [
-		{
-			"path": "../"
-		}
-	],
-	"settings": {
-		"[python]": {
-			"editor.defaultFormatter": "ms-python.black-formatter"
-		},
-		"python.formatting.provider": "none"
-	}
+  "folders": [
+    {
+      "path": "../"
+    },
+    {
+      "path": "../../../../../Applications/Blender.app/Contents/Resources/3.6/scripts/addons/rigify"
+    }
+  ]
 }
