@@ -2,8 +2,10 @@ import bpy
 import logging
 import mathutils
 
-# constant prop name tagged to initialized object in order to display immediate-mode-style UI
-__IS_LEG__ = "fbx2rigify_leg"
+# prop name tagged to initialized object in order to display immediate-mode-style UI
+__IS_WORKING_ITEM__ = "fbx2rigify_leg"
+# we need: 1 thigh, 1 shin, 1 foot, 1 toe, 1 heel
+__REQUIRED_BONE_NUM__ = 5
 
 
 class FBX2LegMeta(bpy.types.Panel):
@@ -21,13 +23,15 @@ class FBX2LegMeta(bpy.types.Panel):
         layout = self.layout
         selected = context.selected_objects
 
-        # Filter for armatures
+        # filters for armatures only
         armatures = [obj for obj in selected if obj.type == "ARMATURE"]
 
+        # must have at least one armature selected
         if not armatures:
             layout.label(text="Select a leg armature to start")
             return
 
+        # forbids working on multiple armatures at once
         if len(armatures) > 1:
             layout.label(text="Please work on one leg at a time")
             return
@@ -36,32 +40,40 @@ class FBX2LegMeta(bpy.types.Panel):
         row = layout.row()
         row.prop(obj, "name", text="Target")
 
-        if __IS_LEG__ not in obj:
+        # keeps track of the working object
+        if __IS_WORKING_ITEM__ not in obj:
             box = layout.box()
             box.label(text="Initialize As Working Leg")
             box.operator(InitLeg.bl_idname, text="Go")
             return
 
+        # checks the bone count in both modes
+        bone_count = max(len(obj.data.bones), len(obj.data.edit_bones))
+
+        # shows warning
+        if bone_count < __REQUIRED_BONE_NUM__:
+            layout.label(
+                text=f"Required at least {__REQUIRED_BONE_NUM__} bones", icon="ERROR")
+
+        # allows placing more helpers even if the bone count already meets the minimum required
         row = layout.row()
         row.label(text="Place Helpers:")
 
-        # all the transform helpers
         row = layout.row()
         row.operator(HeelPrep.bl_idname,
-                     text="Prep Heel", icon="BONE_DATA")
+                     text="Insert Heel", icon="BONE_DATA")
 
-        # NOTE: `object.name` won't work with a Bone selected in Pose Mode
-        # row = layout.row()
-        # row.label(text="Active object is: " + obj.name)
+        # only allows assigning leg metarig if the bone count suffices
+        if bone_count >= __REQUIRED_BONE_NUM__:
+            layout.separator()
+            row = layout.row()
+            row.label(text="Operate On Selection:")
 
-        layout.separator()
-        row = layout.row()
-        row.label(text="Operate On Selection:")
+            row = layout.row()
+            row.operator(AssignLeg.bl_idname,
+                         text="Assign as Leg", icon="MOD_ARMATURE")
 
-        row = layout.row()
-        row.operator(AssignLeg.bl_idname,
-                     text="Assign as Leg", icon="MOD_ARMATURE")
-
+        # allows discarding the working object nonetheless
         layout.separator()
         row = layout.row()
         row.operator(UninitLeg.bl_idname, text="Discard", icon="CANCEL")
@@ -75,7 +87,7 @@ class InitLeg(bpy.types.Operator):
 
     def execute(self, context):
         obj = bpy.context.active_object
-        obj[__IS_LEG__] = True
+        obj[__IS_WORKING_ITEM__] = True
         return {"FINISHED"}
 
 
@@ -87,7 +99,7 @@ class UninitLeg(bpy.types.Operator):
 
     def execute(self, context):
         obj = bpy.context.active_object
-        del obj[__IS_LEG__]
+        del obj[__IS_WORKING_ITEM__]
         return {"FINISHED"}
 
 
