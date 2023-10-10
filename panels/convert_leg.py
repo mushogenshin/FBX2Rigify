@@ -37,8 +37,10 @@ class FBX2LegMeta(bpy.types.Panel):
             return
 
         obj = armatures[0]
-        row = layout.row()
-        row.prop(obj, "name", text="Target")
+
+        if obj.mode == "OBJECT":
+            row = layout.row()
+            row.prop(obj, "name", text="Target")
 
         # keeps track of the working object
         if __IS_WORKING_ITEM__ not in obj:
@@ -56,22 +58,37 @@ class FBX2LegMeta(bpy.types.Panel):
                 text=f"Required at least {__REQUIRED_BONE_NUM__} bones", icon="ERROR")
 
         # allows placing more helpers even if the bone count already meets the minimum required
-        row = layout.row()
-        row.label(text="Place Helpers:")
+        if obj.mode == "EDIT":
+            # prompts for prerequisite
+            row = layout.row()
+            row.label(text="First select the foot as parent", icon="INFO")
+            label = "Insert Heel as child"
+        else:
+            row = layout.row()
+            row.label(text="Place Helpers:")
+            label = "Insert Heel"
 
         row = layout.row()
         row.operator(HeelPrep.bl_idname,
-                     text="Insert Heel", icon="BONE_DATA")
+                     text=label, icon="BONE_DATA")
 
         # only allows assigning leg metarig if the bone count suffices
         if bone_count >= __REQUIRED_BONE_NUM__:
             layout.separator()
             row = layout.row()
-            row.label(text="Operate On Selection:")
+            row.label(text="Assign Metarig:")
+
+            if obj.mode == "POSE":
+                # prompts for prerequisite
+                row = layout.row()
+                row.label(text="First select the thigh", icon="INFO")
+                label = "Tag as Leg"
+            else:
+                label = "Tag Leg"
 
             row = layout.row()
             row.operator(AssignLeg.bl_idname,
-                         text="Assign as Leg", icon="MOD_ARMATURE")
+                         text=label, icon="OUTLINER_DATA_GP_LAYER")
 
         # allows discarding the working object nonetheless
         layout.separator()
