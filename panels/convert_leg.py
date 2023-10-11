@@ -103,7 +103,10 @@ class InitLeg(bpy.types.Operator):
     bl_label = "Tag Object as FBX Working Leg"
 
     def execute(self, context):
-        obj = bpy.context.active_object
+        obj = get_single_active_object()
+        if not obj:
+            return {"CANCELLED"}
+
         obj[__IS_WORKING_ITEM__] = True
         return {"FINISHED"}
 
@@ -115,7 +118,10 @@ class UninitLeg(bpy.types.Operator):
     bl_label = "Untag Object as FBX Working Leg"
 
     def execute(self, context):
-        obj = bpy.context.active_object
+        obj = get_single_active_object()
+        if not obj:
+            return {"CANCELLED"}
+
         del obj[__IS_WORKING_ITEM__]
         return {"FINISHED"}
 
@@ -212,34 +218,61 @@ def unregister():
 ########################################################################################################################
 
 
+def get_single_active_object():
+    """Returns the active object, or None if there is no active object"""
+    objs = bpy.context.selected_objects
+    return objs[0] if objs else None
+
+
 def switch_to_mode(mode: str):
     """Switch to the specified mode"""
-
-    objs = bpy.context.selected_objects
-    if not objs:
+    obj = get_single_active_object()
+    if not obj:
         return
 
-    # Get the current mode
-    current_mode = objs[0].mode
-
-    if current_mode == mode:
+    # compares the current mode
+    if obj.mode == mode:
         return
 
     bpy.ops.object.mode_set(mode=mode)
 
 
 def ls_selected_edit_bones():
-    objs = bpy.context.selected_objects
-    if not objs:
+    obj = get_single_active_object()
+    if not obj:
         return []
-    return [bone for bone in objs[0].data.edit_bones if bone.select]
+    return [bone for bone in obj.data.edit_bones if bone.select]
 
 
 def ls_selected_pose_bones():
-    objs = bpy.context.selected_objects
-    if not objs:
+    obj = get_single_active_object()
+    if not obj:
         return []
-    return [bone for bone in objs[0].pose.bones if bone.bone.select]
+    return [bone for bone in obj.pose.bones if bone.bone.select]
+
+
+def snap_parent_tail_to_child_head(parent, child):
+    """
+        Args:
+            parent: bpy.types.Object
+            child: bpy.types.Object
+    """
+    parent.tail = child.head
+    child.use_connect = True
+
+
+def fix_disconnected_selection():
+    """
+        Only fixes what is selected in EDIT mode
+    """
+    armature = get_single_active_object()
+    selected = [b for b in armature.data.edit_bones if b.select]
+    for parent in selected:
+        if parent.children:
+            # we use the first child as the target
+            child = parent.children[0]
+            if not child.use_connect:
+                snap_parent_tail_to_child_head(parent, child)
 
 
 if __name__ == "__main__":
