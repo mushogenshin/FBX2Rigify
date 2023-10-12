@@ -45,11 +45,14 @@ class FBX2RigifyPanel(bpy.types.Panel):
         armatures = [obj for obj in selected if obj.type == "ARMATURE"]
 
         if armatures:
-            # # sees if some bone is already assigned some metarig
-            # maybe_assigned = any(bone.rigify_type for bone in obj.pose.bones)
-            row = layout.row()
-            row.operator(ApplyAndGenerate.bl_idname,
-                         text="Apply Xforms & Generate Rig", icon="HEART")
+            obj = armatures[0]
+            # sees if some bone is already assigned some metarig
+            maybe_assigned = any(bone.rigify_type for bone in obj.pose.bones)
+
+            if maybe_assigned:
+                row = layout.row()
+                row.operator(ApplyAndGenerate.bl_idname,
+                             text="Apply Xforms & Generate Rig", icon="HEART")
 
 
 class ApplyAndGenerate(bpy.types.Operator):
