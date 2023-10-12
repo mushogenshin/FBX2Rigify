@@ -16,7 +16,7 @@ class FBX2LegMeta(bpy.types.Panel):
     bl_space_type = "VIEW_3D"
     bl_region_type = "UI"
     bl_category = "FBX2Rigify"
-#    bl_parent_id = "OBJECT_PT_fbx2rigify"
+    # bl_parent_id = "OBJECT_PT_fbx2rigify"
     # bl_options = {"DEFAULT_CLOSED"}
 
     def draw(self, context):
@@ -61,7 +61,7 @@ class FBX2LegMeta(bpy.types.Panel):
         if obj.mode == "EDIT":
             # prompts for prerequisite
             row = layout.row()
-            row.label(text="First select the foot as parent", icon="INFO")
+            row.label(text="(select the foot as parent first)", icon="INFO")
             label = "Insert Heel as child"
         else:
             row = layout.row()
@@ -72,6 +72,13 @@ class FBX2LegMeta(bpy.types.Panel):
         row.operator(HeelPrep.bl_idname,
                      text=label, icon="BONE_DATA")
 
+        layout.separator()
+        row = layout.row()
+        row.label(text="Bone Orientation:")
+        row = layout.row()
+        row.operator(SnapParentTail.bl_idname, text="Fix Disconnected",
+                     icon="UNLINKED")
+
         # only allows assigning leg metarig if the bone count suffices
         if bone_count >= __REQUIRED_BONE_NUM__:
             layout.separator()
@@ -81,7 +88,7 @@ class FBX2LegMeta(bpy.types.Panel):
             if obj.mode == "POSE":
                 # prompts for prerequisite
                 row = layout.row()
-                row.label(text="First select the thigh", icon="INFO")
+                row.label(text="(select the thigh first)", icon="INFO")
                 label = "Tag as Leg"
             else:
                 label = "Tag Leg"
@@ -97,38 +104,58 @@ class FBX2LegMeta(bpy.types.Panel):
 
 
 class InitLeg(bpy.types.Operator):
-    """Tag the selected object as a FBX working leg"""
+    """Tags the selected object as a FBX working leg"""
 
     bl_idname = "fbx2rigify.init_leg"
     bl_label = "Tag Object as FBX Working Leg"
 
     def execute(self, context):
-        obj = get_single_active_object()
-        if not obj:
+        armature = get_single_active_object()
+        if not armature:
             return {"CANCELLED"}
 
-        obj[__IS_WORKING_ITEM__] = True
+        armature[__IS_WORKING_ITEM__] = True
         return {"FINISHED"}
 
 
 class UninitLeg(bpy.types.Operator):
-    """Untag the selected object as a FBX working leg"""
+    """Untags the selected object as a FBX working leg"""
 
     bl_idname = "fbx2rigify.uninit_leg"
     bl_label = "Untag Object as FBX Working Leg"
 
     def execute(self, context):
-        obj = get_single_active_object()
-        if not obj:
+        armarture = get_single_active_object()
+        if not armarture:
             return {"CANCELLED"}
 
-        del obj[__IS_WORKING_ITEM__]
+        del armarture[__IS_WORKING_ITEM__]
+        return {"FINISHED"}
+
+
+class SnapParentTail(bpy.types.Operator):
+    """Fixes disconnected bones in selection"""
+
+    bl_idname = "fbx2rigify.snap_parent_tail"
+    bl_label = "Connect Parent Tail to Child Head"
+
+    def execute(self, context):
+        armature = get_single_active_object()
+        if not armature:
+            return {"CANCELLED"}
+
+        # We need to be in the `EDIT` mode to use this operator
+        if armature.mode != "EDIT":
+            switch_to_mode("EDIT")
+            return {"CANCELLED"}
+
+        fix_disconnected_selection(armature)
         return {"FINISHED"}
 
 
 class HeelPrep(bpy.types.Operator):
     """
-    Create a Heel bone (for limbs.leg metarig).
+    Creates a Heel bone (for limbs.leg metarig).
     If no other bone is selected, the Heel is placed near the world origin.
     Otherwise, the Heel is placed near the selected bone.
     """
@@ -142,7 +169,7 @@ class HeelPrep(bpy.types.Operator):
         obj = bpy.context.active_object
 
         # We need to be in the `EDIT` mode to use this operator
-        if obj.mode == "OBJECT":
+        if obj.mode != "EDIT":
             switch_to_mode("EDIT")
             return {"CANCELLED"}
 
@@ -178,7 +205,7 @@ class HeelPrep(bpy.types.Operator):
 
 
 class AssignLeg(bpy.types.Operator):
-    """Assign leg metarig to selected bones"""
+    """Assigns leg metarig to selected bones"""
 
     bl_idname = "fbx2rigify.assign_leg"
     bl_label = "Assign limbs.leg Metarig"
@@ -205,11 +232,13 @@ def register():
     bpy.utils.register_class(UninitLeg)
     bpy.utils.register_class(HeelPrep)
     bpy.utils.register_class(AssignLeg)
+    bpy.utils.register_class(SnapParentTail)
     bpy.utils.register_class(FBX2LegMeta)
 
 
 def unregister():
     bpy.utils.unregister_class(FBX2LegMeta)
+    bpy.utils.unregister_class(SnapParentTail)
     bpy.utils.unregister_class(AssignLeg)
     bpy.utils.unregister_class(HeelPrep)
     bpy.utils.unregister_class(UninitLeg)
@@ -251,21 +280,23 @@ def ls_selected_pose_bones():
     return [bone for bone in obj.pose.bones if bone.bone.select]
 
 
-def snap_parent_tail_to_child_head(parent, child):
+def snap_parent_tail_to_child_head(parent, child, use_connect=True):
     """
+        Snaps the parent bone's tail to the child bone's head.
         Args:
             parent: bpy.types.Object
             child: bpy.types.Object
     """
     parent.tail = child.head
-    child.use_connect = True
+    child.use_connect = use_connect
 
 
-def fix_disconnected_selection():
+def fix_disconnected_selection(armature):
     """
-        Only fixes what is selected in EDIT mode
+        Only fixes the selected bones in the given armature in EDIT mode.
+        Args:
+            armature: bpy.types.Object
     """
-    armature = get_single_active_object()
     selected = [b for b in armature.data.edit_bones if b.select]
     for parent in selected:
         if parent.children:
