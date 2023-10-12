@@ -16,8 +16,8 @@ class FBX2LegMeta(bpy.types.Panel):
     bl_space_type = "VIEW_3D"
     bl_region_type = "UI"
     bl_category = "FBX2Rigify"
-    # bl_parent_id = "OBJECT_PT_fbx2rigify"
-    # bl_options = {"DEFAULT_CLOSED"}
+    bl_parent_id = "OBJECT_PT_fbx2rigify"
+    bl_options = {"DEFAULT_CLOSED"}
 
     def draw(self, context):
         layout = self.layout

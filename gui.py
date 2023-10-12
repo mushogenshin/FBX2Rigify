@@ -48,5 +48,19 @@ class FBX2RigifyPanel(bpy.types.Panel):
             # # sees if some bone is already assigned some metarig
             # maybe_assigned = any(bone.rigify_type for bone in obj.pose.bones)
             row = layout.row()
-            row.operator("pose.rigify_generate",
-                         text="Generate Rig", icon="HEART")
+            row.operator(ApplyAndGenerate.bl_idname,
+                         text="Apply Xforms & Generate Rig", icon="HEART")
+
+
+class ApplyAndGenerate(bpy.types.Operator):
+    """Applies all transforms and generates Rigify"""
+
+    bl_idname = "fbx2rigify.apply_xforms_and_generate"
+    bl_label = "Apply all transforms and generate Rigify"
+
+    def execute(self, context):
+        bpy.ops.object.transform_apply(
+            location=True, rotation=True, scale=True)
+        bpy.ops.pose.rigify_generate()
+
+        return {"FINISHED"}
